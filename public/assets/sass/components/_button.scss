@@ -1,0 +1,198 @@
+/* ========================== Button Css Start =============== */
+// .button__label {
+//     position: relative;
+//     text-align: center;
+//     transition: color 0.05s cubic-bezier(0.645, 0.045, 0.355, 1);
+// }
+// .button--stroke {
+//     &:hover {
+//         color: #0e100f;
+//     }
+//     &::after {
+//         content: "";
+//         position: absolute;
+//         top: 0;
+//         left: 0;
+//         right: 0;
+//         bottom: 0;
+//         border: 0.125rem solid #fffce1;
+//         border-radius: inherit;
+//         pointer-events: none;
+//     }
+//     .button__flair {
+//         transform: scale(0);
+//         transform-origin: 0 0;
+//     }
+//     .button__label {
+//         transition: color 0.15s cubic-bezier(0.645, 0.045, 0.355, 1);
+//     }
+// }
+
+// .button__flair {
+//     position: absolute;
+//     top: 0;
+//     left: 0;
+//     right: 0;
+//     bottom: 0;
+//     pointer-events: none;
+//     &::before {
+//         content: "";
+//         position: absolute;
+//         top: 0;
+//         left: 0;
+//         width: 200%;
+//         aspect-ratio: 1/1;
+//         background-color: #fffce1;
+//         border-radius: 50%;
+//         transform: translate(-50%, -50%);
+//         pointer-events: none;
+//     }
+// }
+
+// .btn {
+//     border: 0;
+//     color: hsl(var(--white));
+//     line-height: 1;
+//     padding: 18px 32px;
+//     position: relative;
+//     overflow: hidden;
+//     border-radius: 6px;
+//     z-index: 1;
+//     transition: .2s linear;
+//     &:hover, &:focus, &:focus-visible {
+//         box-shadow: none !important;
+//     }
+//     // ============= Different Color Button Start ==================
+//     &-main {
+//         background-color: var(--main-600) !important;
+//         color: hsl(var(--white)) !important;
+//         &.button--stroke {
+//             &::after {
+//                 border-color: transparent;
+//             }
+//         }
+    
+//     }
+// }
+
+// .hover-style {
+//     &-one {
+//         &:hover, &:active {
+//             background-color: var(--main-600);
+//             &.button--stroke {
+//                 &::after {
+//                     border-color: transparent;
+//                 }
+//             }
+//         }
+//         .button__flair {
+//             &::before {
+//                 background-color: var(--main-two-600);
+//             }
+//         }
+//     }
+//     &-two {
+//         &:hover, &:active {
+//             color: var(--main-two-600) !important;
+//             &.button--stroke {
+//                 &::after {
+//                     border-color: transparent;
+//                 }
+//             }
+//         }
+//         .button__flair {
+//             &::before {
+//                 background-color: hsl(var(--white));
+//             }
+//         }
+//     }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+.hover-btn-circle .hover-btn-wrapper {
+  display: inline-block;
+}
+.hover-btn-circle .hover-btn-circle-dot {
+  position: absolute;
+  left: 42px !important;
+  bottom: -15px;
+  width: 20px;
+  height: 20px;
+  transition: all 0.6s;
+  border-radius: 50%;
+  background-color: var(--main-600);
+  transform: translate(-50%, -50%);
+  z-index: -1;
+}
+.hover-btn-circle:hover .hover-btn-circle-dot {
+  width: 420px;
+  height: 420px;
+}
+.hover-btn-circle:hover span {
+  color: var(--wt-common-black);
+}
+
+
+
+.tw-btn-hover-yellow, .tw-btn-hover-white, .tw-btn-hover-black {
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    transition: 500ms;
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -16px;
+        z-index: -1;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 0%;
+        margin: auto;
+        transform: rotate(-45deg);
+        background-color: var(--main-600);
+        transition: 700ms cubic-bezier(0.52, 1.64, 0.37, 0.66);
+    }
+    &:hover {
+        color: hsl(var(--heading-color));
+        &::before {
+            height: 550%;
+        }
+    }
+}
+
+
+.tw-btn-hover-white {
+    &::before {
+        background-color: hsl(var(--white));
+    }
+    &:hover {
+        color: hsl(var(--black)) !important;
+    }
+}
+.tw-btn-hover-black {
+    &::before {
+        background-color: hsl(var(--black));
+    }
+    &:hover {
+        color: hsl(var(--white));
+    }
+}
+
+
+
+
+
+
+/* =========================== Button Css End =================== */

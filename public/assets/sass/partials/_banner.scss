@@ -1,0 +1,112 @@
+.banner {
+    &-area {
+        padding: 270px 0 290px;
+        @include sm-screen {
+            padding: 200px 0 160px;
+        }
+
+        &::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            inset-block-start: 0;
+            inset-inline-start: 0;
+            background: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.63) 51.06%, rgba(0, 0, 0, 0.58) 100%);
+
+        }
+    }
+    &-subtitle {
+        @include msm-screen {
+            font-size: 18px;
+            margin-block-end: var(--size-5);
+        }
+    }
+    &-title {
+        letter-spacing: -0.01em;
+        line-height: 96%;
+        @include xl-screen {
+            font-size: 95px;
+            line-height: 98%;
+        }
+        @include lg-screen {
+            font-size: 80px;
+            line-height: 102%;
+        }
+        @include sm-screen {
+            font-size: 65px;
+        }
+        @include msm-screen {
+            font-size: 50px;
+        }
+    }
+    &-play-button {
+        @include lg-screen {
+            justify-content: left !important;
+            margin-block-start: 60px;
+        }
+    }
+}
+
+
+  .play-now-two {
+      width: 110px;
+      height: 110px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: hsl(var(--white));
+      color: hsl(var(--black));
+      border-radius: 50%;
+      font-size: 26px;
+      position: relative;
+      z-index: 1;
+      &::before {
+           position: absolute;
+           content: "";
+           left: 50%;
+           top: 50%;
+           width: 70%;
+           height: 70%;
+           background-color: rgba(255, 255, 255, 0.1);
+           animation: borderanimate2 2s linear infinite;
+           z-index: -1;
+           border-radius: 50%;
+           transform: translate(-50%, -50%);
+           z-index: -1;
+      }
+      &::after {
+           position: absolute;
+           content: "";
+           left: 50%;
+           top: 50%;
+           width: 90%;
+           height: 90%;
+           transform: scale(1.5);
+           border: 1px solid rgba(255, 255, 255, 0.2);
+           animation: borderanimate2 2s linear infinite;
+           border-radius: 50%;
+           transform: translate(-50%, -50%);
+           z-index: -1;
+      }
+ }
+
+
+ @keyframes borderanimate2 {
+     0% {
+         transform: translate(-50%, -50%) scale(.8);
+     }
+      60%{
+           opacity: 1;
+      }
+       100% {
+         transform: translate(-50%, -50%) scale(2.5);
+         opacity: 0;
+       }
+ }
+
+
+
+
+

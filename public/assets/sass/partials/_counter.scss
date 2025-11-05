@@ -1,0 +1,35 @@
+.counter {
+    &-right {
+        width: 281px;
+        height: 281px;
+        @include lg-screen {
+            width: 230px;
+            height: 230px;
+        }
+    }
+    &-title {
+        letter-spacing: -0.03em;
+    }
+    &-paragraph {
+        color: #73777D;
+    }
+}
+
+
+
+.counter-two {
+    &-title {
+        @include xl-screen {
+	        font-size: 80px;
+        }
+        @include lg-screen {
+            font-size: 68px;
+        }
+        & span {
+            margin-inline-start: -28px;
+        }
+    }
+}
+
+
+

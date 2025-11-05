@@ -1,0 +1,133 @@
+// Home One
+.blog {
+    &-wrapper-sm {
+        @include sm-screen {
+            flex-wrap: wrap;
+        }
+    }
+    &-title {
+        max-width: 457px;
+    }
+    &-btn {
+        &:hover {
+            & span {
+                background: var(--main-600);
+                color: hsl(var(--heading-color));
+                border-color: var(--main-600);
+            }
+        }
+    }
+    &-btn-arrow {
+        border: 1px solid rgba(0, 83, 98, 0.1);
+        transition: .4s;
+    }
+    &-thumb {
+        max-width: 210px;
+	    width: 100%;
+        @include sm-screen {
+            max-width: 100%;    
+        }
+        & a {
+            display: inline-block;
+            & img {
+                max-width: 210px;
+                @include sm-screen {
+                    max-width: 100%;   
+                    height: 300px !important; 
+                }
+            }
+        }
+    }
+    &-meta {
+        & span {
+            @include xl-screen {
+                font-size: 14px;
+            }
+        }
+    }
+}
+
+    
+
+// Home Two
+.blog-two {
+     &-wrapper {
+          background: #f6fcff;
+          box-shadow: 0 4px 23px 0 rgba(0, 0, 0, 0.04);
+          @include sm-screen {
+               flex-wrap: wrap;
+               row-gap: 30px;
+               padding-top: 40px;
+          }
+
+     }
+     &-meta {
+          & ul {
+               & li {
+                    list-style: disc;
+               }
+          }
+     }
+     &-content {
+          max-width: 620px;
+          padding-inline-start: 60px;
+          @include xl-screen {
+               max-width: 570px;
+               padding-inline-start: 30px;
+          }
+          @include lg-screen {
+               padding-inline-start: 30px;
+          }
+     }
+     &-title { 
+          @include lg-screen {
+               font-size: 31px;
+          }
+     }
+}
+
+
+// Home Three
+.blog-three {
+    &-thumb {
+        & a {
+            @include md-screen {
+                display: block;
+            }
+            & img {
+                @include lg-screen {
+                    height: 354px;
+                    object-fit: cover;
+                }
+                @include md-screen {
+                    width: 100%;
+                    max-width: 100%;
+                }
+            }
+        }
+    }
+    &-title {
+        @include lg-screen {
+            font-size: 28px;
+        }
+
+    }
+}
+
+
+
+// Home Four
+.blog-four {
+    &-area {
+        padding-block-start: 355px;
+        margin-block-start: -343px;
+    }
+}
+
+
+.blockquote {
+    @include xl-screen {
+	    margin-inline-end: 0;
+    }
+
+}

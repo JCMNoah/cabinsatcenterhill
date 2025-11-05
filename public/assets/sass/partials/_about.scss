@@ -1,0 +1,158 @@
+// Home One
+.about {
+    &-area {
+        padding: 0 0 170px;
+    }
+    &-thumb {
+        margin-inline-start: -64px;
+        @include xxl-screen {
+            margin-inline-start: 0;
+        }
+        @include lg-screen {
+            margin-block-end: 170px;
+        }
+        &-2 {
+            inset-block-start: 160px;
+            inset-inline-end: 0;
+        }
+    }
+    &-list {
+        max-width: 270px;
+    }
+}
+
+
+
+// Home Two
+.about-two {
+    &-thumb {
+        text-align: right;
+        @include lg-screen {
+            text-align: left;
+            margin-block-start: 30px;
+        }
+        & img {
+            @include lg-screen {
+                width: 100%;
+            }
+        }
+    }
+    &-cursor-content {
+        @include md-screen {
+            margin-inline-start: 0;
+        }
+    }
+    &-cursor-text {
+        @include xxl-screen {
+            font-size: 52px;
+        }
+        @include xl-screen {
+            font-size: 43px;
+        }
+        @include sm-screen {
+            font-size: 32px;
+        }
+    }
+}
+
+
+// Home Three
+.about-three {
+    &-button {
+        text-align: right;
+        @include lg-screen {
+            text-align: left;
+            margin-block-start: 30px;
+        }
+    }
+    &-wrapper {
+        @include md-screen {
+            flex-wrap: wrap;
+        }
+    }
+    &-thumb-1 {
+        margin-block-start: -90px;
+        @include md-screen {
+            margin-block-start: 0;
+            width: 100%;
+        }
+        & img {
+            @include md-screen {
+                width: 100%;
+            }  
+        }
+
+    }
+    &-thumb-3 {
+        margin-block-start: -155px;
+        @include md-screen {
+            margin-block-start: 0;
+            width: 100%;
+        }
+        & img {
+            @include md-screen {
+                width: 100%;
+            }  
+        }
+    }
+}
+
+
+// Home Four
+.about-four {
+    &-area {
+        padding-block-start: 200px;
+        margin-block-start: -70px;
+    }
+    &-img {
+        inset-block-start: 290px;
+        @include lg-screen {
+            display: none;
+        }
+        & img {
+            @include xxxxl-screen {
+                width: 400px;
+            }
+            @include xxl-screen {
+                width: 310px;
+            }
+        }
+    }
+    &-title {
+        @include md-screen{
+            font-size: 36px;
+        }
+    }
+    &-thumb {
+        & img {
+            max-width: inherit;
+            @include xxl-screen {
+               	height: 500px;
+            }
+        }
+    }
+    &-panel-wrapper {
+        @include xxxxl-screen {
+            margin-inline-start: 0;
+        }
+    }
+    &-list {
+        & ul {
+            & li {
+                line-height: 100%;
+                @include xl-screen {
+                    font-size: 20px;
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+

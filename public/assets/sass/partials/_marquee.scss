@@ -1,0 +1,21 @@
+.marquee {
+    &-title {
+        font-size: 174px;
+        letter-spacing: -0.01em;
+        text-transform: capitalize;
+        color: #b99d75;
+        @include xl-screen {
+            font-size: 120px;
+        }
+        @include msm-screen {
+            font-size: 68px;
+        }
+    }
+    &-icon {
+        margin-inline-start: 60px;
+    }
+}
+
+.marquee-four {
+    margin-block-start: -106px;
+}

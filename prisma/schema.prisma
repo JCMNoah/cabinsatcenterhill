@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  guest
+  host
+  admin
+}
+
+enum CabinStatus {
+  active
+  inactive
+  pending
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  cancelled
+  completed
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
+// Models
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(guest)
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  cabins   Cabin[]   @relation("HostCabins")
+  bookings Booking[] @relation("GuestBookings")
+  reviews  Review[]  @relation("GuestReviews")
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model Cabin {
+  id           String      @id @default(cuid())
+  title        String
+  description  String
+  location     String
+  pricePerNight Decimal    @db.Decimal(10, 2)
+  maxGuests    Int
+  bedrooms     Int
+  bathrooms    Int
+  amenities    String[]
+  images       String[]
+  hostId       String
+  isFeatured   Boolean     @default(false)
+  status       CabinStatus @default(pending)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // Relationships
+  host     User      @relation("HostCabins", fields: [hostId], references: [id], onDelete: Cascade)
+  bookings Booking[] @relation("CabinBookings")
+  reviews  Review[]  @relation("CabinReviews")
+
+  @@index([hostId])
+  @@index([status])
+  @@index([isFeatured])
+  @@index([pricePerNight])
+  @@map("cabins")
+}
+
+model Booking {
+  id         String        @id @default(cuid())
+  cabinId    String
+  guestId    String
+  checkIn    DateTime
+  checkOut   DateTime
+  totalPrice Decimal       @db.Decimal(10, 2)
+  status     BookingStatus @default(pending)
+  createdAt  DateTime      @default(now())
+
+  // Relationships
+  cabin   Cabin    @relation("CabinBookings", fields: [cabinId], references: [id], onDelete: Cascade)
+  guest   User     @relation("GuestBookings", fields: [guestId], references: [id], onDelete: Cascade)
+  payment Payment? @relation("BookingPayment")
+
+  @@index([cabinId])
+  @@index([guestId])
+  @@index([status])
+  @@index([checkIn, checkOut])
+  @@map("bookings")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  cabinId   String
+  guestId   String
+  rating    Int      @db.SmallInt
+  comment   String
+  createdAt DateTime @default(now())
+
+  // Relationships
+  cabin Cabin @relation("CabinReviews", fields: [cabinId], references: [id], onDelete: Cascade)
+  guest User  @relation("GuestReviews", fields: [guestId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@unique([cabinId, guestId]) // One review per guest per cabin
+  @@index([cabinId])
+  @@index([guestId])
+  @@index([rating])
+  @@map("reviews")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  bookingId     String        @unique
+  amount        Decimal       @db.Decimal(10, 2)
+  paymentMethod String
+  status        PaymentStatus @default(pending)
+  transactionId String?
+  createdAt     DateTime      @default(now())
+
+  // Relationships
+  booking Booking @relation("BookingPayment", fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([transactionId])
+  @@map("payments")
+}

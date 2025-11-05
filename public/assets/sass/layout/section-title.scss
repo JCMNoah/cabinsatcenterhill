@@ -1,0 +1,26 @@
+.section-subtitle {
+    color: #CF8D10;
+    letter-spacing: 0.09em;
+}
+.section-title {
+	font-size: 65px;
+	line-height: 111%;
+    @include xl-screen {
+        font-size: 44px;
+    }
+    @include sm-screen {
+        font-size: 36px;
+    }
+}
+
+
+.section-two {
+    &-title {
+        @include xl-screen {
+            font-size: 53px;
+        }
+        @include sm-screen {
+            font-size: 44px;
+        }
+    }
+}

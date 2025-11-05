@@ -1,0 +1,32 @@
+
+.brand-three {
+    &-wrapper {
+        height: 182px;
+        &:hover {
+            & .brand-three-active-media {
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease-in-out;
+                transform: translateY(-100%);
+            }
+            & .brand-three-hover-media {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+        }
+    }
+    &-hover-media {
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.7s ease-in-out;
+        transform: translateY(30%);
+        border-radius: 50%;
+        position: absolute;
+    }
+    &-active-media {
+        transition: all 0.7s ease-in-out;
+        transform: translateY(0%);
+    }
+}
+

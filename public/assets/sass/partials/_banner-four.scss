@@ -1,0 +1,62 @@
+.banner-four {
+    &-main {
+        @include md-screen {
+            padding-block-start: var(--size-28);
+        }
+    }
+    &-area {
+      background: #f2f1ef;
+    }
+    &-content {
+        margin-inline-start: 210px;
+        padding-block: 150px 190px;
+        @include xxxxxl-screen {
+            margin-inline-start: 130px;
+            padding-block: 180px;
+        }
+        @include xxxxl-screen {
+            margin-inline-start: 70px;
+        }
+        @include xl-screen {
+            margin-inline-start: 20px;
+        }
+        @include md-screen {
+            padding-block: 120px 176px;
+        }
+    }
+    &-title {
+        @include xxxxl-screen {
+            font-size: 80px;
+        }
+        @include xl-screen {
+            font-size: 70px;
+        }
+        @include msm-screen {
+            font-size: 56px;
+        }
+    }
+    &-paragraph {
+        max-width: 691px;
+    }
+    &-thumb {
+        width: 43%;
+        @include xxxxxl-screen {
+            width: 41%;
+        }
+        @include lg-screen {
+            width: 30%;
+        }
+        @include md-screen {
+            display: none;
+        }
+
+    }
+}
+
+
+
+
+
+
+
+
