@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import AnimationManager from "../components/AnimationManager";
 import ScriptLoader from "../components/ScriptLoader";
+import { AuthProvider } from "../components/auth/AuthProvider";
 
 export const metadata: Metadata = {
   title: "EliteStay - Hotel Booking Multi-Purpose",
@@ -31,11 +32,11 @@ export default function RootLayout({
         <link rel="icon" href="/assets/images/logo/favicon.png" type="image/png" />
       </head>
       <body className="bg-neutral-400" suppressHydrationWarning={true}>
-        <ScriptLoader />
-        <AnimationManager />
-        {children}
-
-
+        <AuthProvider>
+          <ScriptLoader />
+          <AnimationManager />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

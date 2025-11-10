@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { bookingOperations } from '@/lib/database'
+import { supabase } from '@/lib/supabase'
 
 // GET /api/bookings - Get bookings (filtered by user role)
 export async function GET(request: NextRequest) {
@@ -9,51 +10,41 @@ export async function GET(request: NextRequest) {
     const hostId = searchParams.get('hostId')
     const status = searchParams.get('status')
 
-    const where: any = {}
-    
+    let bookings
+
     if (guestId) {
-      where.guestId = guestId
-    }
-    
-    if (hostId) {
-      where.cabin = { hostId }
-    }
-    
-    if (status) {
-      where.status = status
+      bookings = await bookingOperations.getByGuestId(guestId)
+    } else if (hostId) {
+      // Get bookings for cabins owned by this host
+      const { data: hostCabins } = await supabase
+        .from('cabins')
+        .select('id')
+        .eq('host_id', hostId)
+
+      if (hostCabins && hostCabins.length > 0) {
+        const cabinIds = hostCabins.map(cabin => cabin.id)
+        const { data: hostBookings } = await supabase
+          .from('bookings')
+          .select(`
+            *,
+            cabin:cabins(*),
+            guest:users(*)
+          `)
+          .in('cabin_id', cabinIds)
+          .order('created_at', { ascending: false })
+
+        bookings = hostBookings || []
+      } else {
+        bookings = []
+      }
+    } else {
+      bookings = await bookingOperations.getAll()
     }
 
-    const bookings = await prisma.booking.findMany({
-      where,
-      include: {
-        cabin: {
-          select: {
-            id: true,
-            title: true,
-            location: true,
-            images: true,
-            pricePerNight: true,
-          },
-        },
-        guest: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatarUrl: true,
-          },
-        },
-        payment: {
-          select: {
-            id: true,
-            status: true,
-            paymentMethod: true,
-            transactionId: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    // Filter by status if provided
+    if (status && bookings) {
+      bookings = bookings.filter((booking: any) => booking.status === status)
+    }
 
     return NextResponse.json(bookings)
   } catch (error) {
@@ -69,12 +60,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { cabinId, guestId, checkIn, checkOut } = body
+    const { cabin_id, guest_id, check_in, check_out } = body
 
     // Validate dates
-    const checkInDate = new Date(checkIn)
-    const checkOutDate = new Date(checkOut)
-    
+    const checkInDate = new Date(check_in)
+    const checkOutDate = new Date(check_out)
+
     if (checkInDate >= checkOutDate) {
       return NextResponse.json(
         { error: 'Check-out date must be after check-in date' },
@@ -82,29 +73,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check for overlapping bookings
-    const overlappingBooking = await prisma.booking.findFirst({
-      where: {
-        cabinId,
-        status: { in: ['confirmed', 'pending'] },
-        OR: [
-          {
-            checkIn: { lte: checkInDate },
-            checkOut: { gt: checkInDate },
-          },
-          {
-            checkIn: { lt: checkOutDate },
-            checkOut: { gte: checkOutDate },
-          },
-          {
-            checkIn: { gte: checkInDate },
-            checkOut: { lte: checkOutDate },
-          },
-        ],
-      },
-    })
+    // Check availability
+    const isAvailable = await bookingOperations.checkAvailability(
+      cabin_id,
+      check_in,
+      check_out
+    )
 
-    if (overlappingBooking) {
+    if (!isAvailable) {
       return NextResponse.json(
         { error: 'Cabin is not available for the selected dates' },
         { status: 409 }
@@ -112,10 +88,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Get cabin details to calculate total price
-    const cabin = await prisma.cabin.findUnique({
-      where: { id: cabinId },
-      select: { pricePerNight: true },
-    })
+    const { data: cabin } = await supabase
+      .from('cabins')
+      .select('price_per_night')
+      .eq('id', cabin_id)
+      .single()
 
     if (!cabin) {
       return NextResponse.json(
@@ -126,40 +103,22 @@ export async function POST(request: NextRequest) {
 
     // Calculate total price
     const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
-    const totalPrice = cabin.pricePerNight.toNumber() * nights
+    const totalPrice = cabin.price_per_night * nights
 
     // Create booking
-    const booking = await prisma.booking.create({
-      data: {
-        cabinId,
-        guestId,
-        checkIn: checkInDate,
-        checkOut: checkOutDate,
-        totalPrice,
-        status: 'pending',
-      },
-      include: {
-        cabin: {
-          select: {
-            id: true,
-            title: true,
-            location: true,
-            images: true,
-            pricePerNight: true,
-          },
-        },
-        guest: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatarUrl: true,
-          },
-        },
-      },
+    const booking = await bookingOperations.create({
+      cabin_id,
+      guest_id,
+      check_in,
+      check_out,
+      total_price: totalPrice,
+      status: 'pending',
     })
 
-    return NextResponse.json(booking, { status: 201 })
+    // Get booking with related data
+    const bookingWithDetails = await bookingOperations.getById(booking.id)
+
+    return NextResponse.json(bookingWithDetails, { status: 201 })
   } catch (error) {
     console.error('Error creating booking:', error)
     return NextResponse.json(

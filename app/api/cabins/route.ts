@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { cabinOperations, reviewOperations } from '@/lib/database'
+import { supabase } from '@/lib/supabase'
 
 // GET /api/cabins - Get all cabins with optional filtering
 export async function GET(request: NextRequest) {
@@ -9,68 +10,67 @@ export async function GET(request: NextRequest) {
     const featured = searchParams.get('featured')
     const maxGuests = searchParams.get('maxGuests')
     const maxPrice = searchParams.get('maxPrice')
+    const minPrice = searchParams.get('minPrice')
+    const location = searchParams.get('location')
+    const amenities = searchParams.get('amenities')
 
-    const where: any = {}
-    
-    if (status) {
-      where.status = status
-    }
-    
-    if (featured === 'true') {
-      where.isFeatured = true
-    }
-    
-    if (maxGuests) {
-      where.maxGuests = { gte: parseInt(maxGuests) }
-    }
-    
-    if (maxPrice) {
-      where.pricePerNight = { lte: parseFloat(maxPrice) }
-    }
+    let cabins
 
-    const cabins = await prisma.cabin.findMany({
-      where,
-      include: {
-        host: {
-          select: {
-            id: true,
-            name: true,
-            avatarUrl: true,
-          },
-        },
-        reviews: {
-          select: {
-            rating: true,
-          },
-        },
-        _count: {
-          select: {
-            reviews: true,
-            bookings: true,
-          },
-        },
-      },
-      orderBy: [
-        { isFeatured: 'desc' },
-        { createdAt: 'desc' },
-      ],
-    })
-
-    // Calculate average rating for each cabin
-    const cabinsWithRatings = cabins.map(cabin => {
-      const avgRating = cabin.reviews.length > 0
-        ? cabin.reviews.reduce((sum, review) => sum + review.rating, 0) / cabin.reviews.length
-        : 0
-
-      return {
-        ...cabin,
-        avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal place
-        reviewCount: cabin._count.reviews,
-        bookingCount: cabin._count.bookings,
+    // If we have search parameters, use the search function
+    if (location || maxPrice || minPrice || maxGuests || amenities) {
+      const searchParams = {
+        location: location || undefined,
+        maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+        minPrice: minPrice ? parseFloat(minPrice) : undefined,
+        maxGuests: maxGuests ? parseInt(maxGuests) : undefined,
+        amenities: amenities ? amenities.split(',') : undefined,
       }
-    })
+      cabins = await cabinOperations.search(searchParams)
+    } else if (featured === 'true') {
+      cabins = await cabinOperations.getFeatured()
+    } else {
+      const includeInactive = status !== undefined
+      cabins = await cabinOperations.getAll(includeInactive)
 
-    return NextResponse.json(cabinsWithRatings)
+      // Filter by status if specified
+      if (status) {
+        cabins = cabins.filter(cabin => cabin.status === status)
+      }
+    }
+
+    // Get host information and reviews for each cabin
+    const cabinsWithDetails = await Promise.all(
+      cabins.map(async (cabin) => {
+        // Get host info
+        const { data: host } = await supabase
+          .from('users')
+          .select('id, name, avatar_url')
+          .eq('id', cabin.host_id)
+          .single()
+
+        // Get reviews for rating calculation
+        const reviews = await reviewOperations.getByCabinId(cabin.id)
+        const avgRating = reviews.length > 0
+          ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+          : 0
+
+        // Get booking count
+        const { count: bookingCount } = await supabase
+          .from('bookings')
+          .select('*', { count: 'exact', head: true })
+          .eq('cabin_id', cabin.id)
+
+        return {
+          ...cabin,
+          host: host || null,
+          avgRating: Math.round(avgRating * 10) / 10,
+          reviewCount: reviews.length,
+          bookingCount: bookingCount || 0,
+        }
+      })
+    )
+
+    return NextResponse.json(cabinsWithDetails)
   } catch (error) {
     console.error('Error fetching cabins:', error)
     return NextResponse.json(
@@ -84,47 +84,46 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
+
     // In a real app, you'd validate the user's role and authentication here
     const {
       title,
       description,
       location,
-      pricePerNight,
-      maxGuests,
+      price_per_night,
+      max_guests,
       bedrooms,
       bathrooms,
       amenities,
       images,
-      hostId,
+      host_id,
     } = body
 
-    const cabin = await prisma.cabin.create({
-      data: {
-        title,
-        description,
-        location,
-        pricePerNight: parseFloat(pricePerNight),
-        maxGuests: parseInt(maxGuests),
-        bedrooms: parseInt(bedrooms),
-        bathrooms: parseInt(bathrooms),
-        amenities,
-        images,
-        hostId,
-        status: 'pending', // New cabins start as pending
-      },
-      include: {
-        host: {
-          select: {
-            id: true,
-            name: true,
-            avatarUrl: true,
-          },
-        },
-      },
+    const cabin = await cabinOperations.create({
+      title,
+      description,
+      location,
+      price_per_night: parseFloat(price_per_night),
+      max_guests: parseInt(max_guests),
+      bedrooms: parseInt(bedrooms),
+      bathrooms: parseInt(bathrooms),
+      amenities: amenities || [],
+      images: images || [],
+      host_id,
+      status: 'pending', // New cabins start as pending
     })
 
-    return NextResponse.json(cabin, { status: 201 })
+    // Get host information
+    const { data: host } = await supabase
+      .from('users')
+      .select('id, name, avatar_url')
+      .eq('id', cabin.host_id)
+      .single()
+
+    return NextResponse.json({
+      ...cabin,
+      host: host || null,
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creating cabin:', error)
     return NextResponse.json(

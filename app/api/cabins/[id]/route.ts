@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { cabinOperations, reviewOperations, bookingOperations } from '@/lib/database'
+import { supabase } from '@/lib/supabase'
 
 // GET /api/cabins/[id] - Get a specific cabin
 export async function GET(
@@ -7,46 +8,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const cabin = await prisma.cabin.findUnique({
-      where: { id: params.id },
-      include: {
-        host: {
-          select: {
-            id: true,
-            name: true,
-            avatarUrl: true,
-            createdAt: true,
-          },
-        },
-        reviews: {
-          include: {
-            guest: {
-              select: {
-                id: true,
-                name: true,
-                avatarUrl: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        bookings: {
-          where: {
-            status: { in: ['confirmed', 'completed'] },
-          },
-          select: {
-            checkIn: true,
-            checkOut: true,
-          },
-        },
-        _count: {
-          select: {
-            reviews: true,
-            bookings: true,
-          },
-        },
-      },
-    })
+    const cabin = await cabinOperations.getById(params.id)
 
     if (!cabin) {
       return NextResponse.json(
@@ -55,19 +17,45 @@ export async function GET(
       )
     }
 
+    // Get host information
+    const { data: host } = await supabase
+      .from('users')
+      .select('id, name, avatar_url, created_at')
+      .eq('id', cabin.host_id)
+      .single()
+
+    // Get reviews with guest information
+    const reviews = await reviewOperations.getByCabinId(cabin.id)
+
+    // Get confirmed/completed bookings for availability
+    const { data: bookings } = await supabase
+      .from('bookings')
+      .select('check_in, check_out')
+      .eq('cabin_id', cabin.id)
+      .in('status', ['confirmed', 'completed'])
+
+    // Get booking count
+    const { count: bookingCount } = await supabase
+      .from('bookings')
+      .select('*', { count: 'exact', head: true })
+      .eq('cabin_id', cabin.id)
+
     // Calculate average rating
-    const avgRating = cabin.reviews.length > 0
-      ? cabin.reviews.reduce((sum, review) => sum + review.rating, 0) / cabin.reviews.length
+    const avgRating = reviews.length > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
       : 0
 
-    const cabinWithRating = {
+    const cabinWithDetails = {
       ...cabin,
+      host: host || null,
+      reviews,
+      bookings: bookings || [],
       avgRating: Math.round(avgRating * 10) / 10,
-      reviewCount: cabin._count.reviews,
-      bookingCount: cabin._count.bookings,
+      reviewCount: reviews.length,
+      bookingCount: bookingCount || 0,
     }
 
-    return NextResponse.json(cabinWithRating)
+    return NextResponse.json(cabinWithDetails)
   } catch (error) {
     console.error('Error fetching cabin:', error)
     return NextResponse.json(
@@ -84,49 +72,49 @@ export async function PUT(
 ) {
   try {
     const body = await request.json()
-    
+
     // In a real app, you'd validate ownership and authentication here
     const {
       title,
       description,
       location,
-      pricePerNight,
-      maxGuests,
+      price_per_night,
+      max_guests,
       bedrooms,
       bathrooms,
       amenities,
       images,
-      isFeatured,
+      is_featured,
       status,
     } = body
 
-    const cabin = await prisma.cabin.update({
-      where: { id: params.id },
-      data: {
-        ...(title && { title }),
-        ...(description && { description }),
-        ...(location && { location }),
-        ...(pricePerNight && { pricePerNight: parseFloat(pricePerNight) }),
-        ...(maxGuests && { maxGuests: parseInt(maxGuests) }),
-        ...(bedrooms && { bedrooms: parseInt(bedrooms) }),
-        ...(bathrooms && { bathrooms: parseInt(bathrooms) }),
-        ...(amenities && { amenities }),
-        ...(images && { images }),
-        ...(typeof isFeatured === 'boolean' && { isFeatured }),
-        ...(status && { status }),
-      },
-      include: {
-        host: {
-          select: {
-            id: true,
-            name: true,
-            avatarUrl: true,
-          },
-        },
-      },
-    })
+    const updates: any = {}
 
-    return NextResponse.json(cabin)
+    if (title) updates.title = title
+    if (description) updates.description = description
+    if (location) updates.location = location
+    if (price_per_night) updates.price_per_night = parseFloat(price_per_night)
+    if (max_guests) updates.max_guests = parseInt(max_guests)
+    if (bedrooms) updates.bedrooms = parseInt(bedrooms)
+    if (bathrooms) updates.bathrooms = parseInt(bathrooms)
+    if (amenities) updates.amenities = amenities
+    if (images) updates.images = images
+    if (typeof is_featured === 'boolean') updates.is_featured = is_featured
+    if (status) updates.status = status
+
+    const cabin = await cabinOperations.update(params.id, updates)
+
+    // Get host information
+    const { data: host } = await supabase
+      .from('users')
+      .select('id, name, avatar_url')
+      .eq('id', cabin.host_id)
+      .single()
+
+    return NextResponse.json({
+      ...cabin,
+      host: host || null,
+    })
   } catch (error) {
     console.error('Error updating cabin:', error)
     return NextResponse.json(
@@ -143,9 +131,7 @@ export async function DELETE(
 ) {
   try {
     // In a real app, you'd validate ownership and authentication here
-    await prisma.cabin.delete({
-      where: { id: params.id },
-    })
+    await cabinOperations.delete(params.id)
 
     return NextResponse.json({ message: 'Cabin deleted successfully' })
   } catch (error) {
