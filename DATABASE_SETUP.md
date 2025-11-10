@@ -89,7 +89,7 @@ You can verify the setup by:
 1. **Using Prisma Studio** (visual database browser):
 ```bash
 pnpm db:studio
-```
+```pnpm dev
 
 2. **Testing API endpoints** (after starting the dev server):
 ```bash

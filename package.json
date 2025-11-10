@@ -2,38 +2,74 @@
   "name": "cabinsatcenterhill",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:seed": "prisma db seed",
-    "db:studio": "prisma studio",
-    "db:reset": "prisma migrate reset"
+    "db:migrate": "typeorm migration:run -d src/data-source.ts",
+    "db:migrate:generate": "typeorm migration:generate -d src/data-source.ts",
+    "db:migrate:create": "typeorm migration:create",
+    "db:seed": "node scripts/seed.js",
+    "db:drop": "typeorm schema:drop -d src/data-source.ts",
+    "admin": "tsx admin-server-typeorm.ts",
+    "admin:dev": "nodemon --exec tsx admin-server-typeorm.ts",
+    "admin:create": "node scripts/create-admin-typeorm.js",
+    "admin:test": "node scripts/test-admin-setup.js",
+    "dev:all": "concurrently \"npm run dev\" \"npm run admin:dev\""
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
+  "pnpm": {
+    "overrides": {
+      "@tiptap/core": "2.1.13",
+      "@tiptap/pm": "2.1.13",
+      "@tiptap/extension-bold": "2.1.13",
+      "@tiptap/extension-italic": "2.1.13",
+      "@tiptap/extension-strike": "2.1.13",
+      "@tiptap/extension-paragraph": "2.1.13",
+      "@tiptap/extension-blockquote": "2.1.13",
+      "@tiptap/extension-bullet-list": "2.1.13",
+      "@tiptap/extension-ordered-list": "2.1.13",
+      "@tiptap/extension-list-item": "2.1.13",
+      "@tiptap/extension-code-block": "2.1.13",
+      "@tiptap/extension-hard-break": "2.1.13",
+      "@tiptap/extension-horizontal-rule": "2.1.13",
+      "@tiptap/extension-dropcursor": "2.1.13",
+      "@tiptap/extension-gapcursor": "2.1.13",
+      "@tiptap/extension-history": "2.1.13"
+    }
   },
   "dependencies": {
+    "@adminjs/express": "^6.1.1",
+    "@adminjs/typeorm": "^5.0.0",
+    "@types/express": "^5.0.5",
+    "@types/express-session": "^1.18.2",
+    "@types/pg": "^8.10.9",
+    "adminjs": "^7.8.17",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "next": "16.0.1",
+    "pg": "^8.11.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "next": "16.0.1",
-    "@prisma/client": "^5.22.0",
-    "bcryptjs": "^2.4.3"
+    "reflect-metadata": "^0.1.13",
+    "typeorm": "^0.3.17"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/bcryptjs": "^2.4.6",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
+    "nodemon": "^3.1.10",
     "prisma": "^5.22.0",
-    "tsx": "^4.19.1"
+    "tailwindcss": "^4",
+    "tsx": "^4.19.1",
+    "typescript": "^5"
   }
 }

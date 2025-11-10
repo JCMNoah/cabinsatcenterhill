@@ -1,24 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a [Next.js](https://nextjs.org) cabin booking application with AdminJS admin panel, built with Prisma ORM and PostgreSQL.
 
 ## Getting Started
 
-First, run the development server:
-
+### 1. Database Setup
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Install dependencies
+pnpm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your PostgreSQL connection string
+
+# Run database migrations
+pnpm db:migrate
+
+# Seed with sample data
+pnpm db:seed
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. AdminJS Setup
+```bash
+# Create your first admin user
+pnpm admin:create
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# Test the setup
+pnpm admin:test
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Start the Application
+```bash
+# Start both Next.js and AdminJS
+pnpm dev:all
+
+# Or start them separately:
+pnpm dev        # Next.js on http://localhost:3000
+pnpm admin      # AdminJS on http://localhost:3001/admin
+```
+
+## 📚 Documentation
+
+- **[Database Setup Guide](./DATABASE_SETUP.md)** - Complete Prisma and PostgreSQL setup
+- **[AdminJS Setup Guide](./ADMINJS_SETUP.md)** - Admin panel configuration and usage
 
 ## Learn More
 
