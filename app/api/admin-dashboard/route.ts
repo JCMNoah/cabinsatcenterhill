@@ -222,7 +222,143 @@ export async function GET() {
         }
         
         .hidden {
-            display: none;
+            display: none !important;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0 4px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #059669;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #1f2937;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .close-btn:hover {
+            color: #374151;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            margin: 0;
         }
     </style>
 </head>
@@ -285,7 +421,10 @@ export async function GET() {
         
         <!-- Cabins Tab -->
         <div id="cabins-tab" class="hidden">
-            <h2>Cabins Management</h2>
+            <div class="section-header">
+                <h2>Cabins Management</h2>
+                <button class="btn btn-primary" onclick="showCabinForm()">Add New Cabin</button>
+            </div>
             <table id="cabins-table">
                 <thead>
                     <tr>
@@ -294,6 +433,8 @@ export async function GET() {
                         <th>Price/Night</th>
                         <th>Max Guests</th>
                         <th>Status</th>
+                        <th>Host</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="cabins-tbody">
@@ -320,7 +461,96 @@ export async function GET() {
             </table>
         </div>
     </div>
-    
+
+    <!-- Cabin Form Modal -->
+    <div id="cabin-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="cabin-modal-title">Add New Cabin</h3>
+                <button class="close-btn" onclick="hideCabinForm()">&times;</button>
+            </div>
+            <form id="cabin-form" onsubmit="saveCabin(event)">
+                <input type="hidden" id="cabin-id" name="id">
+
+                <div class="form-group">
+                    <label for="cabin-title">Title *</label>
+                    <input type="text" id="cabin-title" name="title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cabin-description">Description *</label>
+                    <textarea id="cabin-description" name="description" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="cabin-location">Location *</label>
+                    <input type="text" id="cabin-location" name="location" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cabin-price">Price per Night ($) *</label>
+                        <input type="number" id="cabin-price" name="price_per_night" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cabin-max-guests">Max Guests *</label>
+                        <input type="number" id="cabin-max-guests" name="max_guests" min="1" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cabin-bedrooms">Bedrooms *</label>
+                        <input type="number" id="cabin-bedrooms" name="bedrooms" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cabin-bathrooms">Bathrooms *</label>
+                        <input type="number" id="cabin-bathrooms" name="bathrooms" min="1" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cabin-host">Host *</label>
+                        <select id="cabin-host" name="host_id" required>
+                            <option value="">Select Host</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="cabin-status">Status</label>
+                        <select id="cabin-status" name="status">
+                            <option value="pending">Pending</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cabin-amenities">Amenities (comma-separated)</label>
+                    <input type="text" id="cabin-amenities" name="amenities" placeholder="WiFi, Pool, Kitchen, etc.">
+                </div>
+
+                <div class="form-group">
+                    <label for="cabin-images">Image URLs (comma-separated)</label>
+                    <textarea id="cabin-images" name="images" placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="cabin-featured" name="is_featured">
+                        Featured Cabin
+                    </label>
+                </div>
+
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="hideCabinForm()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Cabin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Check authentication on page load
         const auth = localStorage.getItem('adminAuth');
@@ -419,17 +649,38 @@ export async function GET() {
         async function loadCabins() {
             cabins = await fetchData('cabins');
             document.getElementById('cabins-count').textContent = cabins.length;
-            
+
             const tbody = document.getElementById('cabins-tbody');
-            tbody.innerHTML = cabins.map(cabin => 
-                '<tr>' +
-                '<td>' + cabin.title + '</td>' +
-                '<td>' + cabin.location + '</td>' +
-                '<td>$' + cabin.price_per_night + '</td>' +
-                '<td>' + cabin.max_guests + '</td>' +
-                '<td><span class="badge ' + cabin.status + '">' + cabin.status + '</span></td>' +
-                '</tr>'
-            ).join('');
+            tbody.innerHTML = '';
+
+            cabins.forEach((cabin, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML =
+                    '<td>' + cabin.title + '</td>' +
+                    '<td>' + cabin.location + '</td>' +
+                    '<td>$' + cabin.price_per_night + '</td>' +
+                    '<td>' + cabin.max_guests + '</td>' +
+                    '<td><span class="badge ' + cabin.status + '">' + cabin.status + '</span></td>' +
+                    '<td>' + (cabin.host && cabin.host.name ? cabin.host.name : 'Unknown Host') + '</td>' +
+                    '<td>' +
+                        '<button class="btn btn-primary">Edit</button> ' +
+                        '<button class="btn btn-danger">Delete</button>' +
+                    '</td>';
+
+                // Add event listeners to avoid string escaping issues
+                const editBtn = row.querySelector('.btn-primary');
+                const deleteBtn = row.querySelector('.btn-danger');
+
+                editBtn.addEventListener('click', function() {
+                    editCabin(index);
+                });
+
+                deleteBtn.addEventListener('click', function() {
+                    deleteCabin(cabin.id, cabin.title);
+                });
+
+                tbody.appendChild(row);
+            });
         }
         
         async function loadBookings() {
@@ -439,8 +690,8 @@ export async function GET() {
             const tbody = document.getElementById('bookings-tbody');
             tbody.innerHTML = bookings.map(booking =>
                 '<tr>' +
-                '<td>' + (booking.cabin?.title || 'Unknown Cabin') + '</td>' +
-                '<td>' + (booking.guest?.name || 'Unknown Guest') + '</td>' +
+                '<td>' + (booking.cabin && booking.cabin.title ? booking.cabin.title : 'Unknown Cabin') + '</td>' +
+                '<td>' + (booking.guest && booking.guest.name ? booking.guest.name : 'Unknown Guest') + '</td>' +
                 '<td>' + booking.check_in + '</td>' +
                 '<td>' + booking.check_out + '</td>' +
                 '<td>$' + booking.total_price + '</td>' +
@@ -448,8 +699,167 @@ export async function GET() {
                 '</tr>'
             ).join('');
         }
-        
+
+        // Cabin Management Functions
+        function editCabin(index) {
+            const cabin = cabins[index];
+            showCabinForm(cabin);
+        }
+
+        function showCabinForm(cabin = null) {
+            const modal = document.getElementById('cabin-modal');
+            const form = document.getElementById('cabin-form');
+            const title = document.getElementById('cabin-modal-title');
+
+            // Populate host dropdown
+            const hostSelect = document.getElementById('cabin-host');
+            hostSelect.innerHTML = '<option value="">Select Host</option>';
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = user.name + ' (' + user.email + ')';
+                hostSelect.appendChild(option);
+            });
+
+            if (cabin) {
+                // Edit mode
+                title.textContent = 'Edit Cabin';
+                document.getElementById('cabin-id').value = cabin.id;
+                document.getElementById('cabin-title').value = cabin.title;
+                document.getElementById('cabin-description').value = cabin.description;
+                document.getElementById('cabin-location').value = cabin.location;
+                document.getElementById('cabin-price').value = cabin.price_per_night;
+                document.getElementById('cabin-max-guests').value = cabin.max_guests;
+                document.getElementById('cabin-bedrooms').value = cabin.bedrooms;
+                document.getElementById('cabin-bathrooms').value = cabin.bathrooms;
+                document.getElementById('cabin-host').value = cabin.host_id;
+                document.getElementById('cabin-status').value = cabin.status;
+                document.getElementById('cabin-amenities').value = cabin.amenities ? cabin.amenities.join(', ') : '';
+                document.getElementById('cabin-images').value = cabin.images ? cabin.images.join(', ') : '';
+                document.getElementById('cabin-featured').checked = cabin.is_featured;
+            } else {
+                // Add mode
+                title.textContent = 'Add New Cabin';
+                form.reset();
+                document.getElementById('cabin-id').value = '';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function hideCabinForm() {
+            const modal = document.getElementById('cabin-modal');
+            modal.classList.add('hidden');
+
+            // Reset form
+            const form = document.getElementById('cabin-form');
+            form.reset();
+            document.getElementById('cabin-id').value = '';
+        }
+
+        async function saveCabin(event) {
+            event.preventDefault();
+
+            try {
+                showLoading();
+                hideError();
+
+                const formData = new FormData(event.target);
+                const cabinData = {
+                    title: formData.get('title'),
+                    description: formData.get('description'),
+                    location: formData.get('location'),
+                    price_per_night: parseFloat(formData.get('price_per_night')),
+                    max_guests: parseInt(formData.get('max_guests')),
+                    bedrooms: parseInt(formData.get('bedrooms')),
+                    bathrooms: parseInt(formData.get('bathrooms')),
+                    host_id: formData.get('host_id'),
+                    status: formData.get('status'),
+                    is_featured: formData.get('is_featured') === 'on',
+                    amenities: formData.get('amenities') ? formData.get('amenities').split(',').map(s => s.trim()).filter(s => s) : [],
+                    images: formData.get('images') ? formData.get('images').split(',').map(s => s.trim()).filter(s => s) : []
+                };
+
+                const cabinId = formData.get('id');
+                const isEdit = cabinId && cabinId !== '';
+
+                const url = isEdit ? '/api/admin/cabins/' + cabinId : '/api/admin/cabins';
+                const method = isEdit ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(cabinData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to save cabin');
+                }
+
+                hideCabinForm();
+                await loadCabins();
+
+            } catch (error) {
+                showError('Error saving cabin: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteCabin(cabinId, cabinTitle) {
+            if (!confirm('Are you sure you want to delete "' + cabinTitle + '"? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                showLoading();
+                hideError();
+
+                const response = await fetch('/api/admin/cabins/' + cabinId, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to delete cabin');
+                }
+
+                await loadCabins();
+
+            } catch (error) {
+                showError('Error deleting cabin: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Initialize modal functionality
+        function initializeModal() {
+            const modal = document.getElementById('cabin-modal');
+
+            // Ensure modal is hidden on page load
+            modal.classList.add('hidden');
+
+            // Close modal when clicking outside of it
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    hideCabinForm();
+                }
+            });
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    hideCabinForm();
+                }
+            });
+        }
+
         // Load initial data
+        initializeModal();
         loadUsers();
         loadCabins();
         loadBookings();

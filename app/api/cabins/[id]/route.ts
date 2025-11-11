@@ -5,10 +5,11 @@ import { supabase } from '@/lib/supabase'
 // GET /api/cabins/[id] - Get a specific cabin
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cabin = await cabinOperations.getById(params.id)
+    const { id } = await params
+    const cabin = await cabinOperations.getById(id)
 
     if (!cabin) {
       return NextResponse.json(
