@@ -4,7 +4,29 @@ import FeatureSection from '../components/sections/FeatureSection';
 import AboutSection from '../components/sections/AboutSection';
 import CabinsSection from '../components/sections/CabinsSection';
 
-export default function Home() {
+// Fetch featured cabins on the server
+async function getFeaturedCabins() {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const response = await fetch(`${baseUrl}/api/cabins?featured=true&status=active`, {
+      cache: 'no-store' // Always fetch fresh data
+    })
+
+    if (!response.ok) {
+      console.error('Failed to fetch featured cabins:', response.status)
+      return []
+    }
+
+    const data = await response.json()
+    return data.slice(0, 6) // Show max 6 cabins
+  } catch (error) {
+    console.error('Error fetching featured cabins:', error)
+    return []
+  }
+}
+
+export default async function Home() {
+  const featuredCabins = await getFeaturedCabins()
   return (
     <Layout>
       {/* Banner Section */}
@@ -438,7 +460,7 @@ export default function Home() {
       </section>
 
       {/* Dynamic Cabins Section */}
-      <CabinsSection />
+      <CabinsSection cabins={featuredCabins} />
 
 
 

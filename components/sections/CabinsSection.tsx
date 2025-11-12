@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import FadeAnimation from '@/components/animations/FadeAnimation'
@@ -28,43 +27,13 @@ interface Cabin {
   bookingCount: number
 }
 
-export default function CabinsSection() {
-  const [cabins, setCabins] = useState<Cabin[]>([])
-  const [loading, setLoading] = useState(true)
+interface CabinsSectionProps {
+  cabins: Cabin[]
+}
 
-  useEffect(() => {
-    fetchFeaturedCabins()
-  }, [])
+export default function CabinsSection({ cabins }: CabinsSectionProps) {
 
-  const fetchFeaturedCabins = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch('/api/cabins?featured=true&status=active')
-      if (response.ok) {
-        const data = await response.json()
-        setCabins(data.slice(0, 6)) // Show max 6 cabins
-      }
-    } catch (error) {
-      console.error('Error fetching featured cabins:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
-  if (loading) {
-    return (
-      <section className="cabins-area py-120 position-relative z-1">
-        <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-12 text-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading cabins...</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    )
-  }
 
   if (cabins.length === 0) {
     return (
