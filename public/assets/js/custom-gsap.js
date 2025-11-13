@@ -52,7 +52,6 @@ window.initEliteStayGSAP = function() {
 
       const charElements = document.querySelectorAll(".tw-char-animation");
       if (charElements.length > 0) {
-        console.log(`Found ${charElements.length} character animation elements`);
         let char_come = gsap.utils.toArray(".tw-char-animation");
         char_come.forEach((splitTextLine, index) => {
           // Skip if already processed
@@ -88,21 +87,17 @@ window.initEliteStayGSAP = function() {
             ease: "power2.out",
             scrollTrigger: {
               trigger: splitTextLine,
-              start: "top 40%", // Element must be 40% into viewport (earlier trigger)
+              start: "top 40%",
               end: "bottom 20%",
               scrub: false,
-              markers: false, // Disabled for cleaner view
+              markers: false,
               toggleActions: "play none none none",
-              // Debug animation timing with unique ID
-              id: `char-${index}-${Date.now()}`,
-              onEnter: () => console.log('🎬 Character animation starting:', splitTextLine.textContent.substring(0, 30) + '...'),
+              once: true, // Only trigger animation once
               invalidateOnRefresh: true,
-              refreshPriority: -1, // Lower priority for better performance
+              refreshPriority: -1,
             }
           });
         });
-      } else {
-        console.log('No character animation elements found');
       }
     }
   }
@@ -120,7 +115,6 @@ window.initEliteStayGSAP = function() {
 
     const fadeElements = document.querySelectorAll(".tw_fade_anim");
     if (fadeElements.length > 0) {
-      console.log(`Found ${fadeElements.length} fade animation elements`);
       const fadeArrayup = gsap.utils.toArray(".tw_fade_anim");
       fadeArrayup.forEach((element, index) => {
         // Skip if already processed
@@ -168,12 +162,10 @@ window.initEliteStayGSAP = function() {
         if (onScroll) {
           animationProps.scrollTrigger = {
             trigger: element,
-            start: "top 70%", // Element must be 40% into viewport before triggering (earlier trigger)
+            start: "top 70%",
             end: "bottom 20%",
             toggleActions: "play none none none",
-            // Debug animation timing with unique ID
-            id: `fade-${index}-${Date.now()}`,
-            onEnter: () => console.log('🎭 Fade animation starting:', element.className),
+            once: true, // Only trigger animation once
           };
         }
 
@@ -201,8 +193,6 @@ window.initEliteStayGSAP = function() {
           gsap.from(element, animationProps);
         }
       });
-    } else {
-      console.log('No fade animation elements found');
     }
   }
 

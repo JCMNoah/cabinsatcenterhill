@@ -293,8 +293,10 @@ export async function GET() {
         }
 
         .form-group textarea {
-            height: 80px;
+            height: 150px;
             resize: vertical;
+            white-space: pre-wrap;
+            line-height: 1.5;
         }
 
         .form-row {

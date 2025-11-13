@@ -46,6 +46,7 @@ const CharacterAnimation = ({
           scrub: false,
           markers: false,
           toggleActions: "play none none none",
+          once: true, // Only trigger animation once
         },
       });
 

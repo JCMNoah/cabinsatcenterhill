@@ -52,10 +52,7 @@ export default function CabinDetailClient({ cabin }: CabinDetailClientProps) {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
-  const [adults, setAdults] = useState(1);
-  const [children, setChildren] = useState(0);
-  const [rooms, setRooms] = useState(1);
-  const [extraBeds, setExtraBeds] = useState(0);
+  const [guests, setGuests] = useState(1);
 
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
@@ -90,27 +87,13 @@ export default function CabinDetailClient({ cabin }: CabinDetailClientProps) {
 
   // Helper function to increment/decrement quantities
   const updateQuantity = (
-    type: string,
+    type: "guests",
     operation: "increment" | "decrement"
   ) => {
-    const setters = {
-      adults: setAdults,
-      children: setChildren,
-      rooms: setRooms,
-      extraBeds: setExtraBeds,
-    };
-
-    const values = { adults, children, rooms, extraBeds };
-    const setter = setters[type as keyof typeof setters];
-    const currentValue = values[type as keyof typeof values];
-
-    if (operation === "increment") {
-      setter(currentValue + 1);
-    } else if (
-      operation === "decrement" &&
-      currentValue > (type === "adults" || type === "rooms" ? 1 : 0)
-    ) {
-      setter(currentValue - 1);
+    if (operation === "increment" && guests < cabin.max_guests) {
+      setGuests(guests + 1);
+    } else if (operation === "decrement" && guests > 1) {
+      setGuests(guests - 1);
     }
   };
 
@@ -522,11 +505,11 @@ export default function CabinDetailClient({ cabin }: CabinDetailClientProps) {
                           </ul>
                         </div>
                       </div>
-                      <div className="d-flex align-items-center tw-gap-7">
+                      <div className="d-flex align-items-center tw-gap-1">
                         <h4 className="tw-text-808 fw-bold mb-0">
                           ${cabin.price_per_night}
                         </h4>
-                        <span className="tw-text-sm text-neutral-500">
+                        <span className="tw-text-sm  text-heading">
                           /night
                         </span>
                       </div>
@@ -557,7 +540,10 @@ export default function CabinDetailClient({ cabin }: CabinDetailClientProps) {
                       <h3 className="tw-text-lg fw-semibold text-heading tw-mb-4">
                         About this cabin
                       </h3>
-                      <p className="text-body tw-leading-relaxed">
+                      <p
+                        className="text-body tw-leading-relaxed"
+                        style={{ whiteSpace: 'pre-line' }}
+                      >
                         {cabin.description}
                       </p>
                     </div>
@@ -633,65 +619,49 @@ export default function CabinDetailClient({ cabin }: CabinDetailClientProps) {
                         </div>
 
                         <form className="room-booking-form">
-                          <div className="checkout-wrapper d-flex flex-column tw-mb-4">
-                            <label className="tw-text-sm fw-normal font-body d-flex align-content-center tw-gap-4 tw-mb-2">
-                              <span>
-                                <img
-                                  src="/assets/images/icons/checkout-icon1.svg"
-                                  alt="icon"
+                          {/* Check In and Check Out - Side by Side */}
+                          <div className="row tw-mb-4">
+                            <div className="col-md-6">
+                              <div className="checkout-wrapper d-flex flex-column">
+                                <label className="tw-text-sm fw-normal font-body d-flex align-content-center tw-gap-4 tw-mb-2">
+                                  <span>
+                                    <img
+                                      src="/assets/images/icons/checkout-icon1.svg"
+                                      alt="icon"
+                                    />
+                                  </span>
+                                  Check In
+                                </label>
+                                <input
+                                  type="date"
+                                  value={checkIn}
+                                  onChange={(e) => setCheckIn(e.target.value)}
+                                  className="form-control tw-h-14 bg-white border border-neutral-200 text-heading tw-ps-6 focus-border-main-600"
                                 />
-                              </span>
-                              Check In
-                            </label>
-                            <input
-                              type="date"
-                              value={checkIn}
-                              onChange={(e) => setCheckIn(e.target.value)}
-                              className="form-control tw-h-14 bg-white border border-neutral-200 text-heading tw-ps-6 focus-border-main-600"
-                            />
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <div className="checkout-wrapper d-flex flex-column">
+                                <label className="tw-text-sm fw-normal font-body d-flex align-content-center tw-gap-4 tw-mb-2">
+                                  <span>
+                                    <img
+                                      src="/assets/images/icons/checkout-icon1.svg"
+                                      alt="icon"
+                                    />
+                                  </span>
+                                  Check Out
+                                </label>
+                                <input
+                                  type="date"
+                                  value={checkOut}
+                                  onChange={(e) => setCheckOut(e.target.value)}
+                                  className="form-control tw-h-14 bg-white border border-neutral-200 text-heading tw-ps-6 focus-border-main-600"
+                                />
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="checkout-wrapper d-flex flex-column tw-mb-4">
-                            <label className="tw-text-sm fw-normal font-body d-flex align-content-center tw-gap-4 tw-mb-2">
-                              <span>
-                                <img
-                                  src="/assets/images/icons/checkout-icon1.svg"
-                                  alt="icon"
-                                />
-                              </span>
-                              Check Out
-                            </label>
-                            <input
-                              type="date"
-                              value={checkOut}
-                              onChange={(e) => setCheckOut(e.target.value)}
-                              className="form-control tw-h-14 bg-white border border-neutral-200 text-heading tw-ps-6 focus-border-main-600"
-                            />
-                          </div>
-
-                          <div className="checkout-wrapper d-flex flex-column tw-mb-4">
-                            <label className="tw-text-sm fw-normal font-body d-flex align-content-center tw-gap-4 tw-mb-2">
-                              <span>
-                                <img
-                                  src="/assets/images/icons/checkout-icon3.svg"
-                                  alt="icon"
-                                />
-                              </span>
-                              Select rooms
-                            </label>
-                            <select
-                              value={rooms}
-                              onChange={(e) =>
-                                setRooms(parseInt(e.target.value))
-                              }
-                              className="form-control tw-h-14 bg-white border border-neutral-200 text-heading tw-ps-6 focus-border-main-600"
-                            >
-                              <option value={1}>1 Room</option>
-                              <option value={2}>2 Rooms</option>
-                              <option value={3}>3 Rooms</option>
-                            </select>
-                          </div>
-
+                          {/* Guests Selector */}
                           <div className="checkout-wrapper d-flex flex-column tw-mb-6">
                             <label className="tw-text-sm fw-normal font-body d-flex align-content-center tw-gap-4 tw-mb-2">
                               <span>
@@ -700,58 +670,33 @@ export default function CabinDetailClient({ cabin }: CabinDetailClientProps) {
                                   alt="icon"
                                 />
                               </span>
-                              {rooms} room, {adults} adult
-                              {adults > 1 ? "s" : ""}, {children} child
-                              {children !== 1 ? "ren" : ""}
+                              Guests
                             </label>
                             <div className="guest-selector bg-white border border-neutral-200 tw-rounded tw-p-4">
-                              <div className="d-flex justify-content-between align-items-center tw-mb-3">
-                                <span className="text-heading">Adults</span>
-                                <div className="quantity-controls d-flex align-items-center tw-gap-3">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      updateQuantity("adults", "decrement")
-                                    }
-                                    className="btn btn-sm btn-outline-secondary tw-w-8 tw-h-8 d-flex align-items-center justify-content-center"
-                                  >
-                                    -
-                                  </button>
-                                  <span className="tw-w-8 text-center">
-                                    {adults}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      updateQuantity("adults", "increment")
-                                    }
-                                    className="btn btn-sm btn-outline-secondary tw-w-8 tw-h-8 d-flex align-items-center justify-content-center"
-                                  >
-                                    +
-                                  </button>
-                                </div>
-                              </div>
                               <div className="d-flex justify-content-between align-items-center">
-                                <span className="text-heading">Children</span>
+                                <span className="text-heading">
+                                  {guests} Guest{guests > 1 ? "s" : ""} (Max: {cabin.max_guests})
+                                </span>
                                 <div className="quantity-controls d-flex align-items-center tw-gap-3">
                                   <button
                                     type="button"
                                     onClick={() =>
-                                      updateQuantity("children", "decrement")
+                                      updateQuantity("guests", "decrement")
                                     }
                                     className="btn btn-sm btn-outline-secondary tw-w-8 tw-h-8 d-flex align-items-center justify-content-center"
                                   >
                                     -
                                   </button>
-                                  <span className="tw-w-8 text-center">
-                                    {children}
+                                  <span className="tw-w-8 text-center fw-bold">
+                                    {guests}
                                   </span>
                                   <button
                                     type="button"
                                     onClick={() =>
-                                      updateQuantity("children", "increment")
+                                      updateQuantity("guests", "increment")
                                     }
                                     className="btn btn-sm btn-outline-secondary tw-w-8 tw-h-8 d-flex align-items-center justify-content-center"
+                                    disabled={guests >= cabin.max_guests}
                                   >
                                     +
                                   </button>

@@ -8160,11 +8160,7 @@ header.header.fixed-header,
 }
 
 .checkout-wrapper {
-    max-width: 312px;
     width: 100%;
-    border-right: 0.8px solid rgba(35, 28, 37, 0.14);
-    padding-inline-end: 30px;
-    padding-inline-start: 13px;
 }
 
 @media screen and (max-width: 767px) {
@@ -8179,9 +8175,7 @@ header.header.fixed-header,
     padding-inline-end: 10px;
 }
 
-.checkout-wrapper:nth-child(2) {
-    max-width: 240px;
-}
+
 
 @media screen and (max-width: 991px) {
     .checkout-wrapper:nth-child(2) {

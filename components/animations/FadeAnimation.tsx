@@ -69,7 +69,8 @@ const FadeAnimation = ({
       if (onScroll) {
         animationProps.scrollTrigger = {
           trigger: element,
-          start: "top 110%"
+          start: "top 110%",
+          once: true // Only trigger animation once
         };
       }
 
