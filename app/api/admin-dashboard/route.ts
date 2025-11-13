@@ -360,6 +360,38 @@ export async function GET() {
         .section-header h2 {
             margin: 0;
         }
+
+        /* Drag and Drop Styles */
+        .image-preview-item {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        .image-preview-item:hover {
+            border-color: #9ca3af !important;
+        }
+
+        .image-preview-item:active {
+            cursor: grabbing !important;
+        }
+
+        #image-preview {
+            min-height: 50px;
+            padding: 10px;
+            border: 2px dashed #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+
+        #image-preview:empty::after {
+            content: 'No images uploaded yet. Upload images to see them here.';
+            display: block;
+            text-align: center;
+            color: #9ca3af;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -532,8 +564,12 @@ export async function GET() {
                 </div>
 
                 <div class="form-group">
-                    <label for="cabin-images">Image URLs (comma-separated)</label>
-                    <textarea id="cabin-images" name="images" placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"></textarea>
+                    <label for="cabin-images">Cabin Images</label>
+                    <input type="file" id="cabin-image-upload" accept="image/jpeg,image/png,image/webp" multiple style="margin-bottom: 10px;">
+                    <button type="button" id="upload-images-btn" style="margin-bottom: 10px; padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer;">Upload Images</button>
+                    <div id="upload-progress" style="display: none; margin-bottom: 10px; padding: 8px; background: #dbeafe; border-radius: 6px; color: #1e40af;"></div>
+                    <div id="image-preview" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+                    <input type="hidden" id="cabin-images" name="images">
                 </div>
 
                 <div class="form-group">
@@ -737,24 +773,213 @@ export async function GET() {
                 document.getElementById('cabin-amenities').value = cabin.amenities ? cabin.amenities.join(', ') : '';
                 document.getElementById('cabin-images').value = cabin.images ? cabin.images.join(', ') : '';
                 document.getElementById('cabin-featured').checked = cabin.is_featured;
+                displayImagePreviews();
             } else {
                 // Add mode
                 title.textContent = 'Add New Cabin';
                 form.reset();
                 document.getElementById('cabin-id').value = '';
+                document.getElementById('image-preview').innerHTML = '';
             }
 
             modal.classList.remove('hidden');
         }
 
-        function hideCabinForm() {
+        function hideCabinForm(skipConfirmation = false) {
             const modal = document.getElementById('cabin-modal');
+
+            // Check if form has data and confirm before closing
+            if (!skipConfirmation) {
+                const titleInput = document.getElementById('cabin-title');
+                const hasData = titleInput && titleInput.value.trim() !== '';
+
+                if (hasData) {
+                    if (!confirm('Are you sure you want to close? Any unsaved changes will be lost.')) {
+                        return; // Don't close if user cancels
+                    }
+                }
+            }
+
             modal.classList.add('hidden');
 
             // Reset form
             const form = document.getElementById('cabin-form');
             form.reset();
             document.getElementById('cabin-id').value = '';
+            document.getElementById('image-preview').innerHTML = '';
+            document.getElementById('cabin-images').value = '';
+        }
+
+        // Image upload functionality
+        let uploadedImageUrls = [];
+
+        function displayImagePreviews() {
+            const previewContainer = document.getElementById('image-preview');
+            const imagesInput = document.getElementById('cabin-images');
+            const currentImages = imagesInput.value ? imagesInput.value.split(',').map(s => s.trim()).filter(s => s) : [];
+
+            previewContainer.innerHTML = currentImages.map((url, index) =>
+                '<div class="image-preview-item" draggable="true" data-index="' + index + '" style="position: relative; width: 100px; height: 100px; border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden; cursor: move; transition: all 0.2s;">' +
+                    '<img src="' + url + '" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;">' +
+                    '<button type="button" onclick="removeImage(' + index + ')" style="position: absolute; top: 4px; right: 4px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 12px; z-index: 10;">×</button>' +
+                    '<div style="position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">' + (index + 1) + '</div>' +
+                '</div>'
+            ).join('');
+
+            // Add drag and drop event listeners
+            initializeDragAndDrop();
+        }
+
+        function initializeDragAndDrop() {
+            const items = document.querySelectorAll('.image-preview-item');
+            let draggedItem = null;
+            let draggedIndex = null;
+
+            items.forEach(item => {
+                item.addEventListener('dragstart', function(e) {
+                    draggedItem = this;
+                    draggedIndex = parseInt(this.getAttribute('data-index'));
+                    this.style.opacity = '0.5';
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+
+                item.addEventListener('dragend', function(e) {
+                    this.style.opacity = '1';
+                    this.style.border = '2px solid #e5e7eb';
+                });
+
+                item.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+
+                    if (this !== draggedItem) {
+                        this.style.border = '2px solid #3b82f6';
+                        this.style.transform = 'scale(1.05)';
+                    }
+                });
+
+                item.addEventListener('dragleave', function(e) {
+                    this.style.border = '2px solid #e5e7eb';
+                    this.style.transform = 'scale(1)';
+                });
+
+                item.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.style.border = '2px solid #e5e7eb';
+                    this.style.transform = 'scale(1)';
+
+                    if (this !== draggedItem) {
+                        const dropIndex = parseInt(this.getAttribute('data-index'));
+                        reorderImages(draggedIndex, dropIndex);
+                    }
+                });
+            });
+        }
+
+        function reorderImages(fromIndex, toIndex) {
+            const imagesInput = document.getElementById('cabin-images');
+            const currentImages = imagesInput.value.split(',').map(s => s.trim()).filter(s => s);
+
+            // Remove the item from the old position
+            const [movedImage] = currentImages.splice(fromIndex, 1);
+
+            // Insert it at the new position
+            currentImages.splice(toIndex, 0, movedImage);
+
+            // Update the hidden input
+            imagesInput.value = currentImages.join(', ');
+
+            // Refresh the preview
+            displayImagePreviews();
+        }
+
+        function removeImage(index) {
+            const imagesInput = document.getElementById('cabin-images');
+            const currentImages = imagesInput.value.split(',').map(s => s.trim()).filter(s => s);
+            currentImages.splice(index, 1);
+            imagesInput.value = currentImages.join(', ');
+            displayImagePreviews();
+        }
+
+        async function uploadImages() {
+            const fileInput = document.getElementById('cabin-image-upload');
+            const files = fileInput.files;
+            const cabinId = document.getElementById('cabin-id').value;
+
+            if (!files || files.length === 0) {
+                alert('Please select images to upload');
+                return;
+            }
+
+            // For new cabins, allow uploading images before saving
+            // They will be saved when the cabin is created
+            const isNewCabin = !cabinId || cabinId === '';
+
+            const progressDiv = document.getElementById('upload-progress');
+            progressDiv.style.display = 'block';
+            progressDiv.textContent = 'Uploading images...';
+
+            try {
+                const formData = new FormData();
+                if (!isNewCabin) {
+                    formData.append('cabinId', cabinId);
+                }
+
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files', files[i]);
+                }
+
+                const response = await fetch('/api/admin/upload-images', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to upload images');
+                }
+
+                const result = await response.json();
+
+                // Add new URLs to existing images
+                const imagesInput = document.getElementById('cabin-images');
+                const currentImages = imagesInput.value ? imagesInput.value.split(',').map(s => s.trim()).filter(s => s) : [];
+                const newImages = [...currentImages, ...result.imageUrls];
+                imagesInput.value = newImages.join(', ');
+
+                // Update the cabin with new images (only if editing existing cabin)
+                if (!isNewCabin) {
+                    await updateCabinImages(cabinId, newImages);
+                    progressDiv.textContent = 'Images uploaded and cabin updated!';
+                } else {
+                    progressDiv.textContent = 'Images uploaded! Click "Save Cabin" to complete.';
+                }
+
+                displayImagePreviews();
+                fileInput.value = '';
+
+                setTimeout(() => {
+                    progressDiv.style.display = 'none';
+                }, 3000);
+
+            } catch (error) {
+                progressDiv.style.display = 'none';
+                alert('Error uploading images: ' + error.message);
+            }
+        }
+
+        async function updateCabinImages(cabinId, images) {
+            const response = await fetch('/api/admin/cabins/' + cabinId, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ images: images })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update cabin images');
+            }
         }
 
         async function saveCabin(event) {
@@ -843,20 +1068,13 @@ export async function GET() {
             // Ensure modal is hidden on page load
             modal.classList.add('hidden');
 
-            // Close modal when clicking outside of it
-            modal.addEventListener('click', function(event) {
-                if (event.target === modal) {
-                    hideCabinForm();
-                }
-            });
-
-            // Close modal with Escape key
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Escape') {
-                    hideCabinForm();
-                }
-            });
+            // REMOVED: Click-outside to close (prevents accidental data loss)
+            // REMOVED: Escape key to close (prevents accidental data loss)
+            // Users must use the X button or Cancel button to close the modal
         }
+
+        // Initialize upload button
+        document.getElementById('upload-images-btn').addEventListener('click', uploadImages);
 
         // Load initial data
         initializeModal();

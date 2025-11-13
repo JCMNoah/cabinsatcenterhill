@@ -23,15 +23,8 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData()
-    const cabinId = formData.get('cabinId') as string
+    const cabinId = formData.get('cabinId') as string | null
     const files = formData.getAll('files') as File[]
-
-    if (!cabinId) {
-      return NextResponse.json(
-        { error: 'Cabin ID is required' },
-        { status: 400 }
-      )
-    }
 
     if (!files || files.length === 0) {
       return NextResponse.json(
@@ -55,8 +48,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if user owns the cabin (unless admin)
-    if (user.profile.role !== 'admin') {
+    // Check if user owns the cabin (unless admin) - only if cabinId is provided
+    if (cabinId && user.profile.role !== 'admin') {
       const { data: cabin } = await supabase
         .from('cabins')
         .select('host_id')
@@ -72,7 +65,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Upload images
-    const imageUrls = await cabinImageUtils.uploadCabinImages(cabinId, files)
+    // For new cabins (no cabinId), use a temporary folder or user ID
+    const uploadPath = cabinId || `temp/${user.id}`
+    const imageUrls = await cabinImageUtils.uploadCabinImages(uploadPath, files)
 
     return NextResponse.json({
       message: 'Images uploaded successfully',

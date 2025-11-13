@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import ClientAnimationWrapper from "@/components/animations/ClientAnimationWrapper";
 import FadeAnimation from "@/components/animations/FadeAnimation";
+import ImageLightbox from "@/components/ImageLightbox";
 
 interface Cabin {
   id: string;
@@ -47,13 +48,19 @@ interface CabinDetailClientProps {
 }
 
 export default function CabinDetailClient({ cabin }: CabinDetailClientProps) {
-  const [selectedImage, setSelectedImage] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [rooms, setRooms] = useState(1);
   const [extraBeds, setExtraBeds] = useState(0);
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
 
   // Helper function to render star ratings
   const renderStars = (rating: number) => {
@@ -107,8 +114,357 @@ export default function CabinDetailClient({ cabin }: CabinDetailClientProps) {
     }
   };
 
+  // Render gallery based on number of images
+  const renderGallery = () => {
+    if (!cabin.images || cabin.images.length === 0) {
+      return (
+        <div className="room-details-img-main tw-mb-4">
+          <div
+            className="w-100 tw-rounded-lg bg-gray-200 d-flex align-items-center justify-content-center"
+            style={{ height: "500px" }}
+          >
+            <span className="text-gray-500">No images available</span>
+          </div>
+        </div>
+      );
+    }
+
+    const imageCount = cabin.images.length;
+
+    // Single image
+    if (imageCount === 1) {
+      return (
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "500px",
+            borderRadius: "12px",
+            overflow: "hidden",
+            cursor: "pointer",
+          }}
+          onClick={() => openLightbox(0)}
+        >
+          <Image
+            src={cabin.images[0]}
+            alt={cabin.title}
+            fill
+            style={{ objectFit: "cover" }}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "/images/cabin-placeholder.jpg";
+            }}
+          />
+        </div>
+      );
+    }
+
+    // Two images - side by side
+    if (imageCount === 2) {
+      return (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "8px",
+            borderRadius: "12px",
+            overflow: "hidden",
+          }}
+        >
+          {cabin.images.map((image, index) => (
+            <div
+              key={index}
+              style={{
+                position: "relative",
+                height: "500px",
+                cursor: "pointer",
+              }}
+              onClick={() => openLightbox(index)}
+            >
+              <Image
+                src={image}
+                alt={`${cabin.title} ${index + 1}`}
+                fill
+                style={{ objectFit: "cover" }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/images/cabin-placeholder.jpg";
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Three images - one large, two small
+    if (imageCount === 3) {
+      return (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "2fr 1fr",
+            gap: "8px",
+            borderRadius: "12px",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              position: "relative",
+              height: "500px",
+              cursor: "pointer",
+            }}
+            onClick={() => openLightbox(0)}
+          >
+            <Image
+              src={cabin.images[0]}
+              alt={cabin.title}
+              fill
+              style={{ objectFit: "cover" }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/images/cabin-placeholder.jpg";
+              }}
+            />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {cabin.images.slice(1, 3).map((image, index) => (
+              <div
+                key={index + 1}
+                style={{
+                  position: "relative",
+                  height: "246px",
+                  cursor: "pointer",
+                }}
+                onClick={() => openLightbox(index + 1)}
+              >
+                <Image
+                  src={image}
+                  alt={`${cabin.title} ${index + 2}`}
+                  fill
+                  style={{ objectFit: "cover" }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/images/cabin-placeholder.jpg";
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // Four or more images - Airbnb style grid
+    return (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gridTemplateRows: "repeat(2, 250px)",
+          gap: "8px",
+          borderRadius: "12px",
+          overflow: "hidden",
+        }}
+        className="cabin-gallery"
+      >
+        {/* Main Image - Left Side */}
+        <div
+          style={{
+            gridColumn: "1 / 3",
+            gridRow: "1 / 3",
+            position: "relative",
+            overflow: "hidden",
+            cursor: "pointer",
+          }}
+          onClick={() => openLightbox(0)}
+        >
+          <Image
+            src={cabin.images[0]}
+            alt={cabin.title}
+            fill
+            style={{ objectFit: "cover" }}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "/images/cabin-placeholder.jpg";
+            }}
+          />
+        </div>
+
+        {/* Top Right Image */}
+        {cabin.images[1] && (
+          <div
+            style={{
+              gridColumn: "3 / 4",
+              gridRow: "1 / 2",
+              position: "relative",
+              overflow: "hidden",
+              cursor: "pointer",
+            }}
+            onClick={() => openLightbox(1)}
+          >
+            <Image
+              src={cabin.images[1]}
+              alt={`${cabin.title} 2`}
+              fill
+              style={{ objectFit: "cover" }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/images/cabin-placeholder.jpg";
+              }}
+            />
+          </div>
+        )}
+
+        {/* Top Right Corner Image */}
+        {cabin.images[2] && (
+          <div
+            style={{
+              gridColumn: "4 / 5",
+              gridRow: "1 / 2",
+              position: "relative",
+              overflow: "hidden",
+              cursor: "pointer",
+            }}
+            onClick={() => openLightbox(2)}
+          >
+            <Image
+              src={cabin.images[2]}
+              alt={`${cabin.title} 3`}
+              fill
+              style={{ objectFit: "cover" }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/images/cabin-placeholder.jpg";
+              }}
+            />
+          </div>
+        )}
+
+        {/* Bottom Right Image */}
+        {cabin.images[3] && (
+          <div
+            style={{
+              gridColumn: "3 / 4",
+              gridRow: "2 / 3",
+              position: "relative",
+              overflow: "hidden",
+              cursor: "pointer",
+            }}
+            onClick={() => openLightbox(3)}
+          >
+            <Image
+              src={cabin.images[3]}
+              alt={`${cabin.title} 4`}
+              fill
+              style={{ objectFit: "cover" }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/images/cabin-placeholder.jpg";
+              }}
+            />
+          </div>
+        )}
+
+        {/* Bottom Right Corner Image with "View all photos" button */}
+        {cabin.images[4] && (
+          <div
+            style={{
+              gridColumn: "4 / 5",
+              gridRow: "2 / 3",
+              position: "relative",
+              overflow: "hidden",
+              cursor: "pointer",
+            }}
+            onClick={() => openLightbox(4)}
+          >
+            <Image
+              src={cabin.images[4]}
+              alt={`${cabin.title} 5`}
+              fill
+              style={{ objectFit: "cover" }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/images/cabin-placeholder.jpg";
+              }}
+            />
+            {/* View All Photos Button */}
+            {cabin.images.length > 5 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openLightbox(4);
+                }}
+                style={{
+                  position: "absolute",
+                  bottom: "16px",
+                  right: "16px",
+                  backgroundColor: "white",
+                  color: "black",
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  border: "1px solid black",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  transition: "background-color 0.2s",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#f3f4f6")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "white")
+                }
+              >
+                <i className="ph ph-grid-four"></i>
+                Show all photos
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <ClientAnimationWrapper>
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .cabin-gallery {
+            display: flex !important;
+            flex-direction: column !important;
+            grid-template-columns: unset !important;
+            grid-template-rows: unset !important;
+          }
+          .cabin-gallery > div {
+            grid-column: unset !important;
+            grid-row: unset !important;
+            height: 250px !important;
+          }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .cabin-gallery {
+            grid-template-columns: repeat(2, 1fr) !important;
+            grid-template-rows: repeat(3, 200px) !important;
+          }
+          .cabin-gallery > div:first-child {
+            grid-column: 1 / 3 !important;
+            grid-row: 1 / 2 !important;
+          }
+        }
+      `}</style>
+
+      <ImageLightbox
+        images={cabin.images || []}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        initialIndex={lightboxIndex}
+      />
+
       {/* Room Details Area */}
       <section className="room-details-area tw-pt-11 tw-pb-11">
         <div className="container">
@@ -116,66 +472,9 @@ export default function CabinDetailClient({ cabin }: CabinDetailClientProps) {
             <div className="col-xl-12">
               <FadeAnimation>
                 <div className="room-details-wrapper">
-                  {/* Image Gallery */}
+                  {/* Image Gallery - Airbnb Style */}
                   <div className="room-details-img tw-mb-8">
-                    {cabin.images && cabin.images.length > 0 ? (
-                      <div>
-                        <div className="room-details-img-main tw-mb-4">
-                          <Image
-                            src={cabin.images[selectedImage]}
-                            alt={cabin.title}
-                            width={800}
-                            height={100}
-                            className="w-80 tw-rounded-lg object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = "/images/cabin-placeholder.jpg";
-                            }}
-                          />
-                        </div>
-                        {cabin.images.length > 1 && (
-                          <div className="room-details-img-thumb">
-                            <div className="row tw-gap-3">
-                              {cabin.images.slice(0, 4).map((image, index) => (
-                                <div key={index} className="col-3">
-                                  <button
-                                    onClick={() => setSelectedImage(index)}
-                                    className={`room-details-img-thumb-item w-100 border-0 p-0 ${
-                                      selectedImage === index ? "active" : ""
-                                    }`}
-                                  >
-                                    <Image
-                                      src={image}
-                                      alt={`${cabin.title} ${index + 1}`}
-                                      width={200}
-                                      height={120}
-                                      className="w-100 tw-rounded object-cover"
-                                      onError={(e) => {
-                                        const target =
-                                          e.target as HTMLImageElement;
-                                        target.src =
-                                          "/images/cabin-placeholder.jpg";
-                                      }}
-                                    />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="room-details-img-main tw-mb-4">
-                        <div
-                          className="w-100 tw-rounded-lg bg-gray-200 d-flex align-items-center justify-content-center"
-                          style={{ height: "500px" }}
-                        >
-                          <span className="text-gray-500">
-                            No images available
-                          </span>
-                        </div>
-                      </div>
-                    )}
+                    {renderGallery()}
                   </div>
 
                   {/* Room Title and Info */}
