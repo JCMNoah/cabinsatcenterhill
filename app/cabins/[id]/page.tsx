@@ -1,3 +1,4 @@
+import Layout from '@/components/layout/Layout';
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import CabinDetailClient from '@/components/cabins/CabinDetailClient'
@@ -27,7 +28,7 @@ async function getCabin(id: string) {
 export default async function CabinDetailPage({
   params
 }: {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }) {
   const { id } = await params
   const cabin = await getCabin(id)
@@ -39,22 +40,24 @@ export default async function CabinDetailPage({
 
 
   return (
-    <div>
-      {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <nav className="text-sm">
-            <Link href="/" className="text-blue-600 hover:underline">Home</Link>
-            <span className="mx-2 text-gray-500">/</span>
-            <Link href="/cabins" className="text-blue-600 hover:underline">Cabins</Link>
-            <span className="mx-2 text-gray-500">/</span>
-            <span className="text-gray-700">{cabin.title}</span>
-          </nav>
+    <Layout>
+      <section className="breadcrumb-area background-img position-relative z-1" style={{backgroundImage: 'url(/assets/images/thumbs/breadcrumb-bg.jpg)'}}>
+        <div className="container">
+            <div className="row justify-content-center">
+                <div className="col-lg-12">
+                    <div className="text-center">
+                        <span className="breadcrumb-subtitle tw-mb-4 text-white text-uppercase tw-text-xl fw-bold text-white">{cabin.location}</span>
+                        <h2 className="breadcrumb-title tw-text-25 fw-normal text-white tw-char-animation">{cabin.title}</h2>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+      </section>
+      <div>
 
       {/* Client Component for Interactive Features */}
       <CabinDetailClient cabin={cabin} />
-    </div>
+    </div>  
+    </Layout>
   )
 }

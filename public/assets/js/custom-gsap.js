@@ -168,7 +168,7 @@ window.initEliteStayGSAP = function() {
         if (onScroll) {
           animationProps.scrollTrigger = {
             trigger: element,
-            start: "top 40%", // Element must be 40% into viewport before triggering (earlier trigger)
+            start: "top 70%", // Element must be 40% into viewport before triggering (earlier trigger)
             end: "bottom 20%",
             toggleActions: "play none none none",
             // Debug animation timing with unique ID
